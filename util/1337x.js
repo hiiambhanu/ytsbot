@@ -36,16 +36,22 @@ exports.fetchMagnetLink = (url) => {
         .then(html => {
             // console.log(html);
             const $ = cheerio.load(html);
-            let mgt = $('.l5b4613c7bb5efe6921d695588a9454a64f296919.l7ab9f0e184e904fc8b200661b8673170b7449204').find('a');
+            let mgt = $('a');
+            // console.log(mgt);
 
-            // for(let d of Array.from(mgt)){
-            //     if(d.attribs.href.startsWith('magnet')){
-            //         console.log(d.attribs.href);
-            //     }
-            // }
+
+            for(let d of Array.from(mgt)){
+                if(d.attribs.href.startsWith('magnet')){
+                    return d.attribs.href
+                    // console.log(d.attribs.href);
+                }
+            }
+            // console.log(mgt);
             // console.log(mgt[0].attribs.href);
 
-            return mgt[0].attribs.href;
+            // return mgt[0].attribs.href;
+
+            return "there was an error";
 
         });
 }
