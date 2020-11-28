@@ -5,6 +5,9 @@ exports.fetchTorrents = (title) => {
         .then(blob => blob.json())
         .then(response => {
             let movies = response.data.movies
+            if(!movies){
+                return "";
+            }
             let newData = movies.map(movie => {
                 return { "title": movie.title, "year": movie.year, "torrents": movie.torrents };
             });

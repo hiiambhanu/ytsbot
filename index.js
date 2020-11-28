@@ -34,6 +34,10 @@ client.on('message', async msg => {
 
         movies = resp;
         let index = 0;
+        if(!movies){
+            msg.reply("no movie found");
+            return;
+        }
         let replyString = movies.reduce((replyString, torrent) => {
             // console.log(torrent);
             return replyString + `${index++}  ${torrent.title}, ${torrent.year}\n`
@@ -75,7 +79,7 @@ client.on('message', async msg => {
 
 let getMagnet = () => {
     let trackers = "&tr=udp://glotorrents.pw:6969/announce&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://torrent.gresille.org:80/announce&tr=udp://tracker.openbittorrent.com:80&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://p4p.arenabg.ch:1337&tr=udp://tracker.internetwarriors.net:1337udp://open.demonii.com:1337/announce&tr=udp://tracker.openbittorrent.com:80&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://glotorrents.pw:6969/announce&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://torrent.gresille.org:80/announce&tr=udp://p4p.arenabg.com:1337&tr=udp://tracker.leechers-paradise.org:6969";
-    
+
     if (!torrents || !movies) return "Please use commands properly";
     let TORRENT_HASH = torrents[torrentIndex].hash;
     let title = movies[movieIndex].title;
