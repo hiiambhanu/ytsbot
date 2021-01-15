@@ -28,9 +28,8 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
     if (msg.author.bot) return;
-
     var id = msg.channel.id;
-    // console.log(id);
+    console.log(id);
     if (db[id] === undefined || db[id] === null) {
         db[id] = {};
     }
@@ -80,6 +79,8 @@ client.on('message', async msg => {
     else if (msg.content.startsWith(searchPrefix)) {
         const commandBody = msg.content.slice(searchPrefix.length);
         let results = await otts.fetchTorrents(commandBody);
+        console.log(results);
+        if(!results.length) return msg.channel.send("Sorry, no results found! :(");
         db[id]['res1337'] = results;
         let index = 0;
         let replyString = results.reduce((replyString, torrent) => {
