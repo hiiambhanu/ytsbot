@@ -10,13 +10,17 @@ exports.fetchTorrents = (title) => {
 
             const $ = cheerio.load(html);
             let body = $('.box-info').find('table').find('tbody').find('tr').find('td').find('a');
+            let sizes = $('.box-info').find('table').find('tbody').find('tr').find('.coll-4');
+
             // let rows = body.find('tr');
             // console.log(body);
             let rows = Array.from(body);
             // console.log(rows);
+            let sarr = Array.from(sizes);
 
+            console.table("sarr", sarr[0].firstChild.data);
             let results = [];
-
+            console.log(rows[0].childNodes[4])
             for (let row of rows) {
                 if (results.length === 10) break;
                 if (row.attribs.href.toString().startsWith('/torrent')) {
@@ -24,7 +28,11 @@ exports.fetchTorrents = (title) => {
                 }
             }
             return results;
+        }).catch(err => {
+            console.error(err);
+            return [];
         });
+
 
 }
 
@@ -40,8 +48,8 @@ exports.fetchMagnetLink = (url) => {
             // console.log(mgt);
 
 
-            for(let d of Array.from(mgt)){
-                if(d.attribs.href.startsWith('magnet')){
+            for (let d of Array.from(mgt)) {
+                if (d.attribs.href.startsWith('magnet')) {
                     return d.attribs.href
                     // console.log(d.attribs.href);
                 }

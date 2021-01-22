@@ -24,6 +24,7 @@ var torrentIndex;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    client.user.setActivity(" !help", {type: 'LISTENING'});
 });
 
 client.on('message', async msg => {
@@ -34,6 +35,13 @@ client.on('message', async msg => {
         db[id] = {};
     }
     // console.log(db);
+
+    if(msg.content.startsWith("!chup")){
+        const commandBody = msg.content.slice('!chup'.length);
+        const args = commandBody.split(' ');
+        const command = args.shift().toLowerCase();
+        return msg.channel.send(commandBody + " ");
+    }
 
     if (msg.content.startsWith(searchYTS)) {
         console.log("Searching in yts");
@@ -79,7 +87,6 @@ client.on('message', async msg => {
     else if (msg.content.startsWith(searchPrefix)) {
         const commandBody = msg.content.slice(searchPrefix.length);
         let results = await otts.fetchTorrents(commandBody);
-        console.log(results);
         if(!results.length) return msg.channel.send("Sorry, no results found! :(");
         db[id]['res1337'] = results;
         let index = 0;
