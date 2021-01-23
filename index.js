@@ -91,7 +91,7 @@ client.on('message', async msg => {
         db[id]['res1337'] = results;
         let index = 0;
         let replyString = results.reduce((replyString, torrent) => {
-            return replyString + `${index++}  ${torrent.title}\n`
+            return replyString + `${index++}  ${torrent.title}  ${torrent.size}\n`
         }, '\n');
         msg.channel.send(replyString);
     }

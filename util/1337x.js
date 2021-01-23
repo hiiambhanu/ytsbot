@@ -17,14 +17,13 @@ exports.fetchTorrents = (title) => {
             let rows = Array.from(body);
             // console.log(rows);
             let sarr = Array.from(sizes);
-
-            console.table("sarr", sarr[0].firstChild.data);
             let results = [];
-            console.log(rows[0].childNodes[4])
+            let i = 0;
             for (let row of rows) {
                 if (results.length === 10) break;
                 if (row.attribs.href.toString().startsWith('/torrent')) {
-                    results.push({ "title": row.firstChild.data, "url": row.attribs.href.toString() });
+                    results.push({ "title": row.firstChild.data, "url": row.attribs.href.toString(), "size": sarr[i].firstChild.data || "na" });
+                    i++;
                 }
             }
             return results;
