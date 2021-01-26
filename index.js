@@ -59,7 +59,12 @@ client.on('message', async msg => {
         let replyString = db[id].movies.reduce((replyString, torrent) => {
             return replyString + `${index++}  ${torrent.title}, ${torrent.year}\n`
         }, '\n');
-        msg.channel.send(replyString);
+        let embed = new Discord.MessageEmbed()
+        .setTitle(`Torrents for ${commandBody}`)
+        .setColor(0xff0000)
+        .setDescription(replyString);
+
+        msg.channel.send(embed);
     }
     else if (msg.content.startsWith(torrentPrefix)) {
         const commandBody = msg.content.slice(torrentPrefix.length);
@@ -75,7 +80,12 @@ client.on('message', async msg => {
         let replyString = db[id]['torrents'].reduce((replyString, torrent) => {
             return replyString + `${index++}  ${torrent.quality}, ${torrent.size}\n`
         }, '\n');
-        msg.channel.send(replyString);
+
+        let embed = new Discord.MessageEmbed()
+        .setTitle(`Torrents: `)
+        .setColor(0xff0000)
+        .setDescription(replyString);
+        msg.channel.send(embed);
     }
     else if (msg.content.startsWith(magnetPrefix)) {
         const commandBody = msg.content.slice(magnetPrefix.length);
@@ -93,7 +103,11 @@ client.on('message', async msg => {
         let replyString = results.reduce((replyString, torrent) => {
             return replyString + `${index++}  ${torrent.title}  ${torrent.size}\n`
         }, '\n');
-        msg.channel.send(replyString);
+        let embed = new Discord.MessageEmbed()
+        .setTitle(`Torrents for ${commandBody}`)
+        .setColor(0xff0000)
+        .setDescription(replyString);
+        msg.channel.send(embed);
     }
 
     else if (msg.content.startsWith(magnetPrefix1337)) {
