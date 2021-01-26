@@ -24,7 +24,7 @@ var torrentIndex;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity(" !help", {type: 'LISTENING'});
+    client.user.setActivity(" !help", { type: 'LISTENING' });
 });
 
 client.on('message', async msg => {
@@ -36,7 +36,7 @@ client.on('message', async msg => {
     }
     // console.log(db);
 
-    if(msg.content.startsWith("!chup")){
+    if (msg.content.startsWith("!chup")) {
         const commandBody = msg.content.slice('!chup'.length);
         const args = commandBody.split(' ');
         const command = args.shift().toLowerCase();
@@ -60,9 +60,9 @@ client.on('message', async msg => {
             return replyString + `${index++}  ${torrent.title}, ${torrent.year}\n`
         }, '\n');
         let embed = new Discord.MessageEmbed()
-        .setTitle(`Torrents for ${commandBody}`)
-        .setColor(0xff0000)
-        .setDescription(replyString);
+            .setTitle(`Torrents for ${commandBody}`)
+            .setColor(0xff0000)
+            .setDescription(replyString);
 
         msg.channel.send(embed);
     }
@@ -82,31 +82,35 @@ client.on('message', async msg => {
         }, '\n');
 
         let embed = new Discord.MessageEmbed()
-        .setTitle(`Torrents: `)
-        .setColor(0xff0000)
-        .setDescription(replyString);
+            .setTitle(`Torrents: `)
+            .setColor(0xff0000)
+            .setDescription(replyString);
         msg.channel.send(embed);
     }
     else if (msg.content.startsWith(magnetPrefix)) {
         const commandBody = msg.content.slice(magnetPrefix.length);
         db[id]['torrentIndex'] = Number.parseInt(commandBody);
         let magnetLink = getMagnet(id);
-        msg.channel.send('\n' + magnetLink);
+        let embed = new Discord.MessageEmbed()
+            .setTitle(`Magnet Link:`)
+            .setColor(0xff0000)
+            .setDescription('\n' + magnetLink);
+        msg.channel.send(embed);
     }
 
     else if (msg.content.startsWith(searchPrefix)) {
         const commandBody = msg.content.slice(searchPrefix.length);
         let results = await otts.fetchTorrents(commandBody);
-        if(!results.length) return msg.channel.send("Sorry, no results found! :(");
+        if (!results.length) return msg.channel.send("Sorry, no results found! :(");
         db[id]['res1337'] = results;
         let index = 0;
         let replyString = results.reduce((replyString, torrent) => {
             return replyString + `${index++}  ${torrent.title}  ${torrent.size}\n`
         }, '\n');
         let embed = new Discord.MessageEmbed()
-        .setTitle(`Torrents for ${commandBody}`)
-        .setColor(0xff0000)
-        .setDescription(replyString);
+            .setTitle(`Torrents for ${commandBody}`)
+            .setColor(0xff0000)
+            .setDescription(replyString);
         msg.channel.send(embed);
     }
 
@@ -117,13 +121,18 @@ client.on('message', async msg => {
             return;
         }
         let magnetLink = await otts.fetchMagnetLink(db[id]['res1337'][Number.parseInt(commandBody)].url);
-        msg.channel.send(magnetLink);
+        let embed = new Discord.MessageEmbed()
+            .setTitle(`Magnet Link:`)
+            .setColor(0xff0000)
+            .setDescription(magnetLink);
+        msg.channel.send(embed);
+
     }
     else if (msg.content.startsWith('!help')) {
         let embed = new Discord.MessageEmbed()
-        .setTitle(`How To Use`)
-        .setColor(0xff0000)
-        .setDescription(`To Search with yts: 
+            .setTitle(`How To Use`)
+            .setColor(0xff0000)
+            .setDescription(`To Search with yts: 
             use !syts 'querytitle'. 
             Then to show the torrents for a movie, send !torrents 'indexOfMovie'.
             Finally, to get the magnet link, send !myts 'index'. `
