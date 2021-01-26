@@ -121,7 +121,7 @@ client.on('message', async msg => {
     }
     else if (msg.content.startsWith('!help')) {
         let embed = new Discord.MessageEmbed()
-        .setTitle(`Torrents for ${commandBody}`)
+        .setTitle(`How To Use`)
         .setColor(0xff0000)
         .setDescription(`To Search with yts: 
             use !syts 'querytitle'. 
