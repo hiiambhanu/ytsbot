@@ -120,13 +120,17 @@ client.on('message', async msg => {
         msg.channel.send(magnetLink);
     }
     else if (msg.content.startsWith('!help')) {
-        msg.channel.send(`To Search with yts: 
-        use !syts 'querytitle'. 
-        Then to show the torrents for a movie, send !torrents 'indexOfMovie'.
-        Finally, to get the magnet link, send !myts 'index'. `
-            + `\nTo search with 1337x: 
-        use !s1337x 'query'
-        then, send !m1337x 'indexoftorrent' to get the magnet link`);
+        let embed = new Discord.MessageEmbed()
+        .setTitle(`Torrents for ${commandBody}`)
+        .setColor(0xff0000)
+        .setDescription(`To Search with yts: 
+            use !syts 'querytitle'. 
+            Then to show the torrents for a movie, send !torrents 'indexOfMovie'.
+            Finally, to get the magnet link, send !myts 'index'. `
+                + `\nTo search with 1337x: 
+            use !s1337x 'query'
+            then, send !m1337x 'indexoftorrent' to get the magnet link`);
+        msg.channel.send(embed);
     }
 });
 
