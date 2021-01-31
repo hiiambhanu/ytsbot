@@ -94,7 +94,7 @@ async function handle1337x(id, msg) {
                 return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
             };
 
-            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+            sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
                 .then(async (collected) => {
 
                     let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
@@ -142,7 +142,7 @@ async function handleYts(id, msg) {
                 return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
             };
 
-            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+            sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
                 .then(async (collected) => {
 
                     let movieId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
@@ -170,7 +170,7 @@ async function handleYts(id, msg) {
                                 return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
                             };
 
-                            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+                            sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
                                 .then(async (collected) => {
 
                                     let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
