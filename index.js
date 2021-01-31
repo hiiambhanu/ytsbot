@@ -8,7 +8,15 @@ const magnetPrefix = '!myts ';
 const torrentPrefix = '!torrents ';
 const searchPrefix = '!s1337x ';
 const magnetPrefix1337 = "!m1337x ";
+const helpMessage = `To Search with yts: 
+use !syts 'querytitle'. 
+Then to show the torrents for a movie, send !torrents 'indexOfMovie'.
+Finally, to get the magnet link, send !myts 'index'. `
+    + `\nTo search with 1337x: 
+use !s1337x 'query'
+then, send !m1337x 'indexoftorrent' to get the magnet link`;
 
+const numbers = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 let token = process.env.token;
 var db = {};
 
@@ -22,33 +30,38 @@ var torrentIndex;
 
 
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+client.on('ready', async () => {
+    console.log("Successfully logged in ");
     client.user.setActivity(" !help", { type: 'LISTENING' });
 });
 
 client.on('message', async msg => {
     if (msg.author.bot) return;
     var id = msg.channel.id;
-    console.log(id);
+    let commandBody, args, command;
+
     if (db[id] === undefined || db[id] === null) {
         db[id] = {};
     }
-    // console.log(db);
+
+    let embed = new Discord.MessageEmbed().setColor(0xff0000);
+
+    if (msg.content.startsWith("!test")) {
+        embed.setTitle(`Torrents`).setDescription("a");
+        return msg.channel.send(embed);
+    }
 
     if (msg.content.startsWith("!chup")) {
-        const commandBody = msg.content.slice('!chup'.length);
-        const args = commandBody.split(' ');
-        const command = args.shift().toLowerCase();
+        commandBody = msg.content.slice('!chup'.length);
+        args = commandBody.split(' ');
+        command = args.shift().toLowerCase();
         return msg.channel.send(commandBody + " ");
     }
 
     if (msg.content.startsWith(searchYTS)) {
-        console.log("Searching in yts");
-        const commandBody = msg.content.slice(searchYTS.length);
-        const args = commandBody.split(' ');
-        const command = args.shift().toLowerCase();
-        console.log(commandBody);
+        commandBody = msg.content.slice(searchYTS.length);
+        args = commandBody.split(' ');
+        command = args.shift().toLowerCase();
         let resp = await yts.fetchTorrents(commandBody);
         db[id]['movies'] = resp;
         let index = 0;
@@ -57,19 +70,75 @@ client.on('message', async msg => {
             return;
         }
         let replyString = db[id].movies.reduce((replyString, torrent) => {
-            return replyString + `${index++}  ${torrent.title}, ${torrent.year}\n`
+            return replyString + `${index++} | ${torrent.title}, | ${torrent.year}\n`
         }, '\n');
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`Torrents for ${commandBody}`)
-            .setColor(0xff0000)
-            .setDescription(replyString);
+        embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+        let sms = await msg.channel.send(embed);
+        for (let i = 0; i < index; i++) {
+            if (i > 10) break;
+            await sms.react(numbers[i]);
+        }
 
-        msg.channel.send(embed);
+        const filter = (reaction, user) => {
+            return numbers.find((data) => data = reaction.emoji.name)
+            return 1;
+            //  reaction.emoji.name === '👍';
+        };
+
+        sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+            .then(async (collected) => {
+                console.log(collected.first().emoji.name);
+                let movieId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
+                console.log(movieId);
+                if (!db[id] || !db[id]['movies']) {
+                    return msg.channel.send("Please use the commands properly");
+                }
+                db[id]['movieIndex'] = movieId
+                db[id]['torrents'] = db[id]['movies'][movieId].torrents;
+                let index = 0;
+
+                let replyString = db[id]['torrents'].reduce((replyString, torrent) => {
+                    return replyString + `${index++}  ${torrent.quality}, ${torrent.size}\n`
+                }, '\n');
+
+                embed.setTitle(`Torrents: `).setDescription(replyString);
+                let sms = await msg.channel.send(embed);
+
+                for (let i = 0; i < index; i++) {
+                    if (i > 10) break;
+                    await sms.react(numbers[i]);
+                }
+
+                const filter = (reaction, user) => {
+                    return numbers.find((data) => data = reaction.emoji.name)
+                    return 1;
+                    //  reaction.emoji.name === '👍';
+                };
+
+                sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+                    .then(async (collected)=>{
+                        console.log(collected.first().emoji.name);
+                        let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
+                        console.log(torrentId);
+                        db[id]['torrentIndex'] = torrentId
+                        let magnetLink = getMagnet(id);
+                        embed.setTitle(`Magnet Link:`).setDescription('\n' + magnetLink);
+                        msg.channel.send(embed);
+                    })
+                    .catch(collected => {
+                        sms.reactions.removeAll();
+                        console.log(`After a minute, only ${collected.size} out of 4 reacted.`);
+                    });
+
+            })
+            .catch(collected => {
+                sms.reactions.removeAll();
+                console.log(`After a minute, only ${collected.size} out of 4 reacted.`);
+            });
+
     }
     else if (msg.content.startsWith(torrentPrefix)) {
-        const commandBody = msg.content.slice(torrentPrefix.length);
-        console.log(commandBody);
-        // console.log(db[id]['movies']);
+        commandBody = msg.content.slice(torrentPrefix.length);
         if (!db[id] || !db[id]['movies']) {
             return msg.channel.send("Please use the commands properly");
         }
@@ -81,64 +150,51 @@ client.on('message', async msg => {
             return replyString + `${index++}  ${torrent.quality}, ${torrent.size}\n`
         }, '\n');
 
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`Torrents: `)
-            .setColor(0xff0000)
-            .setDescription(replyString);
-        msg.channel.send(embed);
+        embed.setTitle(`Torrents: `).setDescription(replyString);
+        let sms = await msg.channel.send(embed);
+        for (let i = 0; i < index; i++) {
+            if (i > 10) break;
+            await sms.react(numbers[i]);
+        }
     }
     else if (msg.content.startsWith(magnetPrefix)) {
-        const commandBody = msg.content.slice(magnetPrefix.length);
+        commandBody = msg.content.slice(magnetPrefix.length);
         db[id]['torrentIndex'] = Number.parseInt(commandBody);
         let magnetLink = getMagnet(id);
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`Magnet Link:`)
-            .setColor(0xff0000)
-            .setDescription('\n' + magnetLink);
+        embed.setTitle(`Magnet Link:`).setDescription('\n' + magnetLink);
         msg.channel.send(embed);
     }
 
     else if (msg.content.startsWith(searchPrefix)) {
-        const commandBody = msg.content.slice(searchPrefix.length);
+        commandBody = msg.content.slice(searchPrefix.length);
         let results = await otts.fetchTorrents(commandBody);
         if (!results.length) return msg.channel.send("Sorry, no results found! :(");
         db[id]['res1337'] = results;
         let index = 0;
         let replyString = results.reduce((replyString, torrent) => {
-            return replyString + `${index++}  ${torrent.title}  ${torrent.size}\n`
+            return replyString + `${index++} | ${torrent.title} | ${torrent.size}\n`
         }, '\n');
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`Torrents for ${commandBody}`)
-            .setColor(0xff0000)
-            .setDescription(replyString);
-        msg.channel.send(embed);
+        embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+        let sms = await msg.channel.send(embed);
+        for (let i = 0; i < index; i++) {
+            if (i > 10) break;
+            await sms.react(numbers[i]);
+        }
     }
 
     else if (msg.content.startsWith(magnetPrefix1337)) {
-        const commandBody = msg.content.slice(magnetPrefix1337.length);
+        commandBody = msg.content.slice(magnetPrefix1337.length);
         if (!db[id]['res1337'] || !db[id]['res1337'][Number.parseInt(commandBody)]) {
             msg.channel.send("Please use the command properly ");
             return;
         }
         let magnetLink = await otts.fetchMagnetLink(db[id]['res1337'][Number.parseInt(commandBody)].url);
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`Magnet Link:`)
-            .setColor(0xff0000)
-            .setDescription(magnetLink);
+        embed.setTitle(`Magnet Link:`).setDescription(magnetLink);
         msg.channel.send(embed);
 
     }
     else if (msg.content.startsWith('!help')) {
-        let embed = new Discord.MessageEmbed()
-            .setTitle(`How To Use`)
-            .setColor(0xff0000)
-            .setDescription(`To Search with yts: 
-            use !syts 'querytitle'. 
-            Then to show the torrents for a movie, send !torrents 'indexOfMovie'.
-            Finally, to get the magnet link, send !myts 'index'. `
-                + `\nTo search with 1337x: 
-            use !s1337x 'query'
-            then, send !m1337x 'indexoftorrent' to get the magnet link`);
+        embed.setTitle(`How To Use`).setDescription(helpMessage);
         msg.channel.send(embed);
     }
 });
