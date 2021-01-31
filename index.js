@@ -15,7 +15,8 @@ const numbers = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣
 let token = process.env.token;
 var db = {};
 
-
+let commandBody, args, command;
+let embed = new Discord.MessageEmbed().setColor(0xff0000);
 var movies;
 var torrents;
 var res1337;
@@ -33,14 +34,11 @@ client.on('ready', async () => {
 client.on('message', async msg => {
     if (msg.author.bot) return;
     var id = msg.channel.id;
-    let commandBody, args, command;
+
 
     if (db[id] === undefined || db[id] === null) {
         db[id] = {};
     }
-
-    let embed = new Discord.MessageEmbed().setColor(0xff0000);
-
 
     if (msg.content.startsWith("!chup")) {
         commandBody = msg.content.slice('!chup'.length);
@@ -50,117 +48,11 @@ client.on('message', async msg => {
     }
 
     if (msg.content.startsWith(searchYTS)) {
-        commandBody = msg.content.slice(searchYTS.length);
-        args = commandBody.split(' ');
-        command = args.shift().toLowerCase();
-        let resp = await yts.fetchTorrents(commandBody);
-        db[id]['movies'] = resp;
-        let index = 0;
-        if (!db[id]['movies']) {
-            msg.channel.send("no movie found");
-            return;
-        }
-        let replyString = db[id].movies.reduce((replyString, torrent) => {
-            return replyString + `${index++} | ${torrent.title}, | ${torrent.year}\n`
-        }, '\n');
-        embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
-        let sms = await msg.channel.send(embed);
-        for (let i = 0; i < index; i++) {
-            if (i > 10) break;
-            await sms.react(numbers[i]);
-            if(i == 0 ){
-                const filter = (reaction, user) => {
-                    return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
-                };
-        
-                sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
-                    .then(async (collected) => {
-        
-                        let movieId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
-                        if (!db[id] || !db[id]['movies']) {
-                            return msg.channel.send("Please use the commands properly");
-                        }
-                        db[id]['movieIndex'] = movieId
-                        db[id]['torrents'] = db[id]['movies'][movieId].torrents;
-                        let index = 0;
-        
-                        let replyString = db[id]['torrents'].reduce((replyString, torrent) => {
-                            return replyString + `${index++}  ${torrent.quality}, ${torrent.size}\n`
-                        }, '\n');
-        
-                        embed.setTitle(`Torrents: `).setDescription(replyString);
-                        let sms = await msg.channel.send(embed);
-        
-                        for (let i = 0; i < index; i++) {
-                            if (i > 10) break;
-                            await sms.react(numbers[i]);
-        
-                            if (i === 0) {
-                                const filter = (reaction, user) => {
-                                    return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
-                                };
-        
-                                sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
-                                    .then(async (collected) => {
-        
-                                        let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
-                                        db[id]['torrentIndex'] = torrentId
-                                        let magnetLink = getMagnet(id);
-                                        embed.setTitle(`Magnet Link:`).setDescription('\n' + magnetLink);
-                                        msg.channel.send(embed);
-                                    })
-                                    .catch(collected => {
-                                        sms.reactions.removeAll();
-                                    });
-                            }
-                        }
-        
-                    })
-                    .catch(collected => {
-                        sms.reactions.removeAll();
-                    });
-            }
-        }
-
+        handleYts(id, msg);
     }
 
     else if (msg.content.startsWith(searchPrefix)) {
-        commandBody = msg.content.slice(searchPrefix.length);
-        let results = await otts.fetchTorrents(commandBody);
-        if (!results.length) return msg.channel.send("Sorry, no results found! :(");
-        db[id]['res1337'] = results;
-        let index = 0;
-        let replyString = results.reduce((replyString, torrent) => {
-            return replyString + `${index++} | ${torrent.title} | ${torrent.size}\n`
-        }, '\n');
-        embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
-        let sms = await msg.channel.send(embed);
-
-        for (let i = 0; i < index; i++) {
-            if (i > 10) break;
-            await sms.react(numbers[i]);
-            if (i == 0) {
-                const filter = (reaction, user) => {
-                    return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
-                };
-
-                sms.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
-                    .then(async (collected) => {
-
-                        let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
-                        if (!db[id]['res1337'] || !db[id]['res1337'][torrentId]) {
-                            msg.channel.send("Please use the command properly ");
-                            return;
-                        }
-                        let magnetLink = await otts.fetchMagnetLink(db[id]['res1337'][torrentId].url);
-                        embed.setTitle(`Magnet Link:`).setDescription(magnetLink);
-                        msg.channel.send(embed);
-                    })
-                    .catch(collected => {
-                        sms.reactions.removeAll();
-                    });
-            }
-        }
+        handle1337x(id, msg);
     }
 
     else if (msg.content.startsWith('!help')) {
@@ -179,3 +71,127 @@ let getMagnet = (id) => {
 }
 
 client.login(token);
+
+async function handle1337x(id, msg) {
+
+    commandBody = msg.content.slice(searchPrefix.length);
+    let results = await otts.fetchTorrents(commandBody);
+    if (!results.length) return msg.channel.send("Sorry, no results found! :(");
+    db[id]['res1337'] = results;
+    let index = 0;
+    let replyString = results.reduce((replyString, torrent) => {
+        return replyString + `${index++} | ${torrent.title} | ${torrent.size}\n`
+    }, '\n');
+    embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+    let sms = await msg.channel.send(embed);
+    let flag = 0;
+
+    for (let i = 0; i < index; i++) {
+        if (i > 10 || flag) break;
+        await sms.react(numbers[i]);
+        if (i == 0) {
+            const filter = (reaction, user) => {
+                return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
+            };
+
+            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+                .then(async (collected) => {
+
+                    let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
+                    if (!db[id]['res1337'] || !db[id]['res1337'][torrentId]) {
+                        msg.channel.send("Please use the command properly ");
+                        return;
+                    }
+                    sms.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
+                    flag = 1;
+                    let magnetLink = await otts.fetchMagnetLink(db[id]['res1337'][torrentId].url);
+                    embed.setTitle(`Magnet Link:`).setDescription(magnetLink);
+                    msg.channel.send(embed);
+                })
+                .catch(collected => {
+                    console.log("here");
+                    sms.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
+                });
+        }
+    }
+}
+
+async function handleYts(id, msg) {
+    commandBody = msg.content.slice(searchYTS.length);
+    args = commandBody.split(' ');
+    command = args.shift().toLowerCase();
+    let resp = await yts.fetchTorrents(commandBody);
+    db[id]['movies'] = resp;
+    let index = 0;
+    if (!db[id]['movies']) {
+        msg.channel.send("no movie found");
+        return;
+    }
+    let replyString = db[id].movies.reduce((replyString, torrent) => {
+        return replyString + `${index++} | ${torrent.title}, | ${torrent.year}\n`
+    }, '\n');
+    embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+    let sms = await msg.channel.send(embed);
+
+    let flag = 0;
+    for (let i = 0; i < index; i++) {
+        if (i > 10 || flag) break;
+        await sms.react(numbers[i]);
+        if (i == 0) {
+            const filter = (reaction, user) => {
+                return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
+            };
+
+            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+                .then(async (collected) => {
+
+                    let movieId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
+                    if (!db[id] || !db[id]['movies']) {
+                        return msg.channel.send("Please use the commands properly");
+                    }
+                    db[id]['movieIndex'] = movieId
+                    db[id]['torrents'] = db[id]['movies'][movieId].torrents;
+                    let index = 0;
+
+                    let replyString = db[id]['torrents'].reduce((replyString, torrent) => {
+                        return replyString + `${index++}  ${torrent.quality}, ${torrent.size}\n`
+                    }, '\n');
+
+                    embed.setTitle(`Torrents: `).setDescription(replyString);
+                    let sms = await msg.channel.send(embed);
+                    flag = 1;
+                    let fflag = 0
+                    for (let i = 0; i < index; i++) {
+                        if (i > 10 || fflag) break;
+                        await sms.react(numbers[i]);
+
+                        if (i === 0) {
+                            const filter = (reaction, user) => {
+                                return numbers.find((data) => data = reaction.emoji.name) && !user.bot;
+                            };
+
+                            sms.awaitReactions(filter, { max: 1, time: 6000, errors: ['time'] })
+                                .then(async (collected) => {
+
+                                    let torrentId = numbers.findIndex((data, index) => data == collected.first().emoji.name);
+                                    db[id]['torrentIndex'] = torrentId
+                                    let magnetLink = getMagnet(id);
+                                    embed.setTitle(`Magnet Link:`).setDescription('\n' + magnetLink);
+                                    sms.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
+                                    fflag = 1;
+                                    msg.channel.send(embed);
+                                })
+                                .catch(collected => {
+                                    sms.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
+                                });
+                        }
+                    }
+
+                })
+                .catch(collected => {
+                    console.log("here");
+                    sms.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
+                });
+        }
+    }
+}
