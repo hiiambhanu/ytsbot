@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const table = require('markdown-table')
 require('dotenv').config()
 const client = new Discord.Client();
 const yts = require('./util/yts');
@@ -79,10 +80,14 @@ async function handle1337x(id, msg) {
     if (!results.length) return msg.channel.send("Sorry, no results found! :(");
     db[id]['res1337'] = results;
     let index = 0;
-    let replyString = results.reduce((replyString, torrent) => {
-        return replyString + `${index++} | ${torrent.title} | ${torrent.size}\n`
-    }, '\n');
-    embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+    
+    let tableArr = results.reduce((tableArr, torrent)=>{
+        return [...tableArr , [index++, torrent.title, torrent.size]];
+    }, [["Index", "Title", "Size"]]);
+
+    let tableEmbed = table(tableArr, {align: ["c", "c", "c"] }, {stringLength: "width"});
+    
+    embed.setTitle(`Torrents for ${commandBody}`).setDescription(tableEmbed);
     let sms = await msg.channel.send(embed);
     let flag = 0;
 
@@ -127,10 +132,15 @@ async function handleYts(id, msg) {
         msg.channel.send("no movie found");
         return;
     }
-    let replyString = db[id].movies.reduce((replyString, torrent) => {
-        return replyString + `${index++} | ${torrent.title}, | ${torrent.year}\n`
-    }, '\n');
-    embed.setTitle(`Torrents for ${commandBody}`).setDescription(replyString);
+    let results = db[id].movies;
+    
+    let tableArr = results.reduce((tableArr, torrent)=>{
+        return [...tableArr , [index++, torrent.title, torrent.size]];
+    }, [["Index", "Title", "Size"]]);
+
+    let tableEmbed = table(tableArr, {align: ["c", "c", "c"] }, {stringLength: "width"});
+
+    embed.setTitle(`Torrents for ${commandBody}`).setDescription(tableEmbed);
     let sms = await msg.channel.send(embed);
 
     let flag = 0;
