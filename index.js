@@ -135,8 +135,8 @@ async function handleYts(id, msg) {
     let results = db[id].movies;
     
     let tableArr = results.reduce((tableArr, torrent)=>{
-        return [...tableArr , [index++, torrent.title, torrent.size]];
-    }, [["Index", "Title", "Size"]]);
+        return [...tableArr , [index++, torrent.title]];
+    }, [["Index", "Title"]]);
 
     let tableEmbed = table(tableArr, {align: ["c", "c", "c"] }, {stringLength: "width"});
 
