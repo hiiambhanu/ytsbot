@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 
 
 exports.fetchTorrents = (title) => {
-    return fetch('https://1337x.is/search/' + title + '/1/', { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0' } })
+    return fetch('https://1337xx.to/search/' + title + '/1/', { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0' } })
         .then(blob => blob.text())
         .then(html => {
             // console.log(html);
@@ -38,7 +38,7 @@ exports.fetchTorrents = (title) => {
 exports.fetchMagnetLink = (url) => {
 
     // url = '/torrent/4639668/Scam-1992-the-Harshad-Mehta-Story-S01-E01-10-WebRip-720p-Hindi-AAC-x264-mkvCinemas-Telly/'
-    return fetch('https://1337x.is' + url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0' } })
+    return fetch('https://1337xx.to' + url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0' } })
         .then(blob => blob.text())
         .then(html => {
             // console.log(html);
